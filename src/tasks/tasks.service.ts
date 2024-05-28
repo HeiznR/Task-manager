@@ -64,8 +64,9 @@ export class TasksService {
   }
 
   async updateTask(id: string, status: TaskStatus): Promise<Task> {
-    const response = await this.tasksRepository.update({ id }, { status });
-    console.log(response);
-    return this.getTaskById(id);
+    const task = await this.getTaskById(id);
+    task.status = status;
+    await this.tasksRepository.save(task);
+    return task;
   }
 }
