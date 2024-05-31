@@ -1,21 +1,30 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { SignUpDto } from './dto/signUp.dto';
+import { AuthDto } from './dto/auth.dto';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './jwtPayload';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    @Inject(ConfigService) private configService: ConfigService,
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
+  async signUp(signUpDto: AuthDto): Promise<{ accessToken: string }> {
     const { password, userName } = signUpDto;
     const user = await this.usersRepository.findOneBy({ userName });
     if (user) {
@@ -27,7 +36,26 @@ export class AuthService {
       userName,
       password: hashedPassword,
     });
-    const token = this.jwtService.sign({ id: res.id }, { secret: 'test123' });
-    return { token };
+    const payload: JwtPayload = { userId: res.id, userName: res.userName };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    return { accessToken };
+  }
+
+  async signIn(signInDto: AuthDto): Promise<{ accessToken: string }> {
+    const { password, userName } = signInDto;
+    const user = await this.usersRepository.findOneBy({ userName });
+    if (!user) throw new NotFoundException('user is not exist');
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const payload: JwtPayload = { userName, userId: user.id };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      return { accessToken };
+    } else {
+      throw new UnauthorizedException('Check your credentials');
+    }
   }
 }

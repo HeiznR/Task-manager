@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { TaskStatus } from './task.status.enum';
 import { v4 as uuid } from 'uuid';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -37,11 +37,15 @@ export class TasksService {
   }
 
   async getTaskById(id: string): Promise<Task> {
-    const response = await this.tasksRepository.findOneBy({ id });
-    if (!response) {
-      throw new NotFoundException(`Task with id: ${id} is not found`);
+    try {
+      const response = await this.tasksRepository.findOneBy({ id });
+      if (!response) {
+        throw new NotFoundException(`Task with id: ${id} is not found`);
+      }
+      return response;
+    } catch (error) {
+      throw new HttpException('Unexpected error', 404);
     }
-    return response;
   }
 
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {

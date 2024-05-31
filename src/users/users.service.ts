@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Repository } from 'typeorm';
@@ -35,8 +30,8 @@ export class UsersService {
     return user;
   }
 
-  async deleteUser(userName: string): Promise<string> {
-    const res = await this.userRepository.delete({ userName });
+  async deleteUser(id: string): Promise<string> {
+    const res = await this.userRepository.delete({ id });
     if (!res.affected) {
       return 'no such user in db';
     } else {
