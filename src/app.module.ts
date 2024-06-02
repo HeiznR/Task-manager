@@ -19,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
       password: 'postgres',
       database: 'task-service',
       entities: [User, Task],
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,

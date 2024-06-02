@@ -20,6 +20,10 @@ export class UsersController {
   getUsers(): Promise<User[]> {
     return this.usersService.getUsers();
   }
+  @Get('/:id')
+  getUserById(@Param('id') id: string): Promise<User> {
+    return this.usersService.getUserById(id);
+  }
   @Post()
   createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.createUser(createUserDto);
