@@ -5,9 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 
 export class JwtStategy extends PassportStrategy(Strategy) {
-  constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
-  ) {
+  constructor(@Inject(ConfigService) protected configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
