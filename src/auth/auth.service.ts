@@ -36,7 +36,7 @@ export class AuthService {
       userName,
       password: hashedPassword,
     });
-    const payload: JwtPayload = { sub: res.id, userName: res.userName };
+    const payload: JwtPayload = { id: res.id, userName: res.userName };
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
     });
@@ -49,7 +49,7 @@ export class AuthService {
     if (!user) throw new NotFoundException('user is not exist');
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { userName, sub: user.id };
+      const payload: JwtPayload = { userName, id: user.id };
       const accessToken = this.jwtService.sign(payload, {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
